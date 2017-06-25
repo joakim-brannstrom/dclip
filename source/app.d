@@ -14,6 +14,32 @@ import std.exception;
 immutable clipBufferFile = "~/.dclip";
 string errmsg;
 
+// pbcopy = xclip -i sel or xsel -i -b
+// pbpaste = xclip -o sel or sel -o -b
+
+int main(string[] args) {
+    int exit_status = 1;
+    alias Command = int function(string[] args);
+
+    Command[string] commands;
+    commands["pbcopy"] = &pbcopy;
+    commands["pbpaste"] = &pbpaste;
+
+    if (auto c = args[0].baseName in commands) {
+        exit_status = (*c)(args);
+    } else if (args.length == 2 && args[1] == "setup") {
+        exit_status = setup(args[0]);
+    } else {
+        writefln("Usage: %s setup", args[0].baseName);
+    }
+
+    if (exit_status != 0) {
+        stderr.writeln(errmsg);
+    }
+
+    return exit_status;
+}
+
 nothrow int pbcopy(string[] args) {
     char[] buf;
     buf.length = 1024;
@@ -67,27 +93,4 @@ int setup(string arg0) {
     }
 
     return 0;
-}
-
-int main(string[] args) {
-    int exit_status = 1;
-    alias Command = int function(string[] args);
-
-    Command[string] commands;
-    commands["pbcopy"] = &pbcopy;
-    commands["pbpaste"] = &pbpaste;
-
-    if (auto c = args[0].baseName in commands) {
-        exit_status = (*c)(args);
-    } else if (args.length == 2 && args[1] == "setup") {
-        exit_status = setup(args[0]);
-    } else {
-        writefln("Usage: %s setup", args[0].baseName);
-    }
-
-    if (exit_status != 0) {
-        stderr.writeln(errmsg);
-    }
-
-    return exit_status;
 }
