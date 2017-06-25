@@ -5,3 +5,5 @@ copyright "Copyright © 2017, Joakim Brännström"
 license "BSL-1.0"
 
 targetPath "build"
+
+postBuildCommands "build/dclip setup"
