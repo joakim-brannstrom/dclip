@@ -2,4 +2,6 @@ name "dclip"
 description "mini clipboard handler for vim"
 authors "Joakim Brännström"
 copyright "Copyright © 2017, Joakim Brännström"
-license "boost"
+license "BSL-1.0"
+
+targetPath "build"
