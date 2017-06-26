@@ -18,6 +18,7 @@ string errmsg;
 // pbpaste = xclip -o sel or sel -o -b
 
 int main(string[] args) {
+    immutable prog = args[0].baseName;
     int exit_status = 1;
     alias Command = int function(string[] args);
 
@@ -25,12 +26,12 @@ int main(string[] args) {
     commands["pbcopy"] = &pbcopy;
     commands["pbpaste"] = &pbpaste;
 
-    if (auto c = args[0].baseName in commands) {
+    if (auto c = prog in commands) {
         exit_status = (*c)(args);
     } else if (args.length == 2 && args[1] == "setup") {
         exit_status = setup(args[0]);
     } else {
-        writefln("Usage: %s setup", args[0].baseName);
+        printHelp(args[0].baseName);
     }
 
     if (exit_status != 0) {
@@ -38,6 +39,17 @@ int main(string[] args) {
     }
 
     return exit_status;
+}
+
+void printHelp(string prog) {
+    writefln("Usage: %s <command group>", prog);
+    writeln("command group:");
+    writeln("  setup    create symlinks for pbcopy/pbpaste");
+    writeln();
+    writefln("Usage: <program group>");
+    writeln("program group (via symlinks):");
+    writeln("  pbcopy   copy stdin to buffer file");
+    writeln("  pbpaste  stream buffer file to stdout");
 }
 
 nothrow int pbcopy(string[] args) {
