@@ -18,20 +18,25 @@ string errmsg;
 // pbpaste = xclip -o sel or sel -o -b
 
 int main(string[] args) {
-    immutable prog = args[0].baseName;
     int exit_status = 1;
     alias Command = int function(string[] args);
 
-    Command[string] commands;
-    commands["pbcopy"] = &pbcopy;
-    commands["pbpaste"] = &pbpaste;
+    Command[string] program_groups;
+    program_groups["pbcopy"] = &pbcopy;
+    program_groups["pbpaste"] = &pbpaste;
 
-    if (auto c = prog in commands) {
+    Command[string] command_groups;
+    command_groups["setup"] = &setup;
+
+    immutable prog = args[0].baseName;
+    immutable arg1 = args.length == 2 ? args[1] : "";
+
+    if (auto c = prog in program_groups) {
         exit_status = (*c)(args);
-    } else if (args.length == 2 && args[1] == "setup") {
-        exit_status = setup(args[0]);
+    } else if (auto c = arg1 in command_groups) {
+        exit_status = (*c)(args);
     } else {
-        printHelp(args[0].baseName);
+        printHelp(prog);
     }
 
     if (exit_status != 0) {
@@ -65,9 +70,9 @@ nothrow int pbcopy(string[] args) {
 
         return 0;
     } catch (ErrnoException ex) {
-        errmsg = "Unable to write to: " ~ clipBufferFile;
+        errmsg = "Unable to write to: " ~ clipBufferFile ~ "(" ~ ex.msg ~ ")";
     } catch (Exception ex) {
-        errmsg = "Unable close file: " ~ clipBufferFile;
+        errmsg = "Unable close file: " ~ clipBufferFile ~ "(" ~ ex.msg ~ ")";
     }
 
     return 1;
@@ -86,15 +91,18 @@ nothrow int pbpaste(string[] args) {
 
         return 0;
     } catch (ErrnoException ex) {
-        errmsg = "Unable to read from: " ~ clipBufferFile;
+        errmsg = "Unable to read from: " ~ clipBufferFile ~ "(" ~ ex.msg ~ ")";
     } catch (Exception ex) {
-        errmsg = "Unable close file: " ~ clipBufferFile;
+        errmsg = "Unable close file: " ~ clipBufferFile ~ "(" ~ ex.msg ~ ")";
     }
 
     return 1;
 }
 
-int setup(string arg0) {
+int setup(string[] args) {
+    assert(args.length >= 2);
+
+    immutable arg0 = args[0];
     immutable original = arg0.expandTilde.absolutePath;
     immutable base = original.dirName;
     immutable pbcopy_ = buildPath(base, "pbcopy");
