@@ -27,6 +27,7 @@ int main(string[] args) {
 
     Command[string] command_groups;
     command_groups["setup"] = &setup;
+    command_groups["open"] = &openClip;
 
     immutable prog = args[0].baseName;
     immutable arg1 = args.length == 2 ? args[1] : "";
@@ -110,6 +111,18 @@ int setup(string[] args) {
 
     foreach (p; [pbcopy_, pbpaste_].filter!(a => !exists(a))) {
         symlink(original, p);
+    }
+
+    return 0;
+}
+
+int openClip(string[] args) {
+    import std.process;
+
+    try {
+        execute(["xdg-open", clipBufferFile.expandTilde]);
+    } catch (Exception ex) {
+        writeln("Unable to open the: ", clipBufferFile);
     }
 
     return 0;
