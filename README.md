@@ -51,9 +51,9 @@ if executable("pbcopy")
         let @@ = system('pbpaste')
     endfunction
 
-    vnoremap <silent> y y:call ClipboardYank()<cr>
-    vnoremap <silent> d d:call ClipboardYank()<cr>
-    nnoremap <silent> p :call ClipboardPaste()<cr>p
+    vnoremap <silent> <leader>y y:call ClipboardYank()<cr>
+    nnoremap <silent> <leader>p :call ClipboardPaste()<cr>p
+    nnoremap <silent> <leader>dclip :call system('dclip open')<cr>
 endif
 "}}}
 ```
